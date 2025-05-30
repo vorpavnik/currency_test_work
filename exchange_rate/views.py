@@ -13,19 +13,18 @@ from rest_framework.response import Response
 from .models import ExchangeRate
 from .serializers import ExchangeRateSerializer
 
-r = redis.Redis(host='localhost', port=6379, db=0)
+
 class DollarRateView(APIView):
     # Храним время последнего запроса и курс
     last_fetch_time = 0
     last_rate_rub_per_usd = None
     min_interval = 10  # секунды
+    r = redis.Redis(host='localhost', port=6379, db=0)
 
     def get(self, request):
         current_time = time.time()
 
-        # Проверяем, прошло ли достаточно времени с последнего запроса
         if self.last_rate_rub_per_usd is not None and current_time - self.last_fetch_time < self.min_interval:
-            # Возвращаем закэшированный результат
             return Response({
                 "source": "cached",
                 "rub_per_usd": self.last_rate_rub_per_usd,
